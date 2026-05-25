@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cuerpo de Bomberos RD — En Desarrollo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:       #C8102E;
+  --red-deep:  #7A0018;
+  --red-mid:   #A00020;
+  --gold:      #F5A623;
+  --white:     #FFFFFF;
+  --white-dim: rgba(255,255,255,0.55);
+  --white-faint: rgba(255,255,255,0.08);
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Barlow Condensed', sans-serif;
+  background: var(--red-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* ── BACKGROUND LAYERS ── */
+.bg-base {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, #E8001A 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, #A00020 0%, transparent 60%),
+    linear-gradient(160deg, #6A0012 0%, #8B0018 40%, #5A000E 100%);
+}
+
+/* Diagonal stripe texture */
+.bg-stripes {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 40px,
+    rgba(255,255,255,0.018) 40px,
+    rgba(255,255,255,0.018) 41px
+  );
+}
+
+/* Grid overlay */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* Noise grain */
+.bg-noise {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+/* Glowing orbs */
+.orb {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 1;
+  filter: blur(80px);
+}
+.orb-1 { width: 500px; height: 500px; top: -100px; left: -150px; background: rgba(220,0,30,0.35); animation: drift1 12s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; bottom: -80px; right: -100px; background: rgba(180,0,20,0.3); animation: drift2 15s ease-in-out infinite; }
+.orb-3 { width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(245,166,35,0.06); animation: drift3 9s ease-in-out infinite; }
+
+@keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,40px)} }
+@keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-30px)} }
+@keyframes drift3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.15)} }
+
+/* ── MAIN CARD ── */
+.card {
+  position: relative; z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(2.5rem, 8vw, 5rem) clamp(1.5rem, 6vw, 4rem);
+  max-width: 680px;
+  width: 92%;
+  animation: fadeUp 1.1s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── EMBLEM ── */
+.emblem-wrap {
+  position: relative;
+  margin-bottom: 2.2rem;
+  animation: fadeUp 1.1s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.emblem-ring {
+  width: clamp(88px, 18vw, 120px);
+  height: clamp(88px, 18vw, 120px);
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(4px);
+}
+
+.emblem-ring::before {
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(245,166,35,0.25);
+  animation: spin 20s linear infinite;
+}
+.emblem-ring::after {
+  content: '';
+  position: absolute; inset: -12px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255,255,255,0.08);
+  animation: spin 30s linear infinite reverse;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.emblem-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 30px rgba(255,255,255,0.4);
+  animation: codePulse 3s ease-in-out infinite;
+}
+
+@keyframes codePulse {
+  0%,100% { text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+  50%      { text-shadow: 0 0 40px rgba(255,255,255,0.7), 0 0 80px rgba(245,166,35,0.2); }
+}
+
+/* ── PROJECT LABEL ── */
+.project-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(0.6rem, 1.5vw, 0.72rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+
+/* ── TITLE ── */
+.title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.6rem, 9vw, 5.5rem);
+  letter-spacing: 0.04em;
+  line-height: 0.92;
+  color: var(--white);
+  margin-bottom: 0.4rem;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.title span {
+  display: block;
+  color: rgba(255,255,255,0.25);
+  font-size: clamp(1.4rem, 5vw, 3rem);
+  letter-spacing: 0.12em;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 1.6rem auto;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.55s ease both;
+}
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  padding: 7px 18px;
+  margin-bottom: 1.8rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s ease both;
+  backdrop-filter: blur(8px);
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+  animation: blink 1.5s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── MESSAGE ── */
+.message {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--white-dim);
+  max-width: 480px;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.7s ease both;
+}
+
+.message strong {
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  width: 100%;
+  max-width: 360px;
+  margin: 2rem auto 0;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.85s ease both;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.progress-track {
+  width: 100%; height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), #FFD080);
+  border-radius: 2px;
+  animation: fillBar 2.5s 1.2s cubic-bezier(0.4,0,0.2,1) forwards;
+  box-shadow: 0 0 12px rgba(245,166,35,0.6);
+}
+
+@keyframes fillBar { to { width: 15%; } }
+
+/* ── BOTTOM CREDITS ── */
+.credits {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 1s ease both;
+}
+
+.credits-main {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+}
+
+.credits-sep {
+  width: 30px; height: 1px;
+  background: rgba(255,255,255,0.15);
+}
+
+.credits-sub {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+}
+
+.credits-sub span {
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── CORNER DECORATION ── */
+.corner {
+  position: fixed; z-index: 5; pointer-events: none;
+  width: 60px; height: 60px;
+  opacity: 0.25;
+}
+.corner-tl { top: 24px; left: 24px; border-top: 1px solid #fff; border-left: 1px solid #fff; }
+.corner-tr { top: 24px; right: 24px; border-top: 1px solid #fff; border-right: 1px solid #fff; }
+.corner-bl { bottom: 24px; left: 24px; border-bottom: 1px solid #fff; border-left: 1px solid #fff; }
+.corner-br { bottom: 24px; right: 24px; border-bottom: 1px solid #fff; border-right: 1px solid #fff; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .corner { width: 36px; height: 36px; top: 14px; left: 14px; }
+  .corner-tr { top: 14px; right: 14px; left: auto; }
+  .corner-bl { bottom: 14px; left: 14px; top: auto; }
+  .corner-br { bottom: 14px; right: 14px; top: auto; left: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-base"></div>
+<div class="bg-stripes"></div>
+<div class="bg-grid"></div>
+<div class="bg-noise"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Corner decorations -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- Main content -->
+<div class="card">
+
+  <div class="emblem-wrap">
+    <div class="emblem-ring">
+      <span class="emblem-code">&lt;/&gt;</span>
+    </div>
+  </div>
+
+  <p class="project-label">Sistema Nacional · República Dominicana</p>
+
+  <h1 class="title">
+    BOMBEROS RD
+    <span>REP. DOM.</span>
+  </h1>
+
+  <div class="divider"></div>
+
+  <div class="status-badge">
+    <div class="status-dot"></div>
+    <span class="status-text">En etapa de desarrollo</span>
+  </div>
+
+  <p class="message">
+    Estamos construyendo algo grande para RD</strong>.<br>
+    El sistema nacional de estaciones, cobertura<br>y recursos de bomberos estará disponible pronto.
+  </p>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Progreso</span>
+      <span>15%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill"></div>
+    </div>
+  </div>
+
+  <div class="credits">
+    <p class="credits-main">Creado por Bomberos, para Bomberos</p>
+    <div class="credits-sep"></div>
+    <p class="credits-sub">Registrado y Desarrollado por <span>Ontrx Group®</span></p>
+  </div>
+
+</div>
+
+</body>
+</html>
